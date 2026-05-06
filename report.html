@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SubTrackr 사이트 분석 리포트</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+      background: #f4f6fa;
+      color: #1e2532;
+      min-height: 100vh;
+    }
+
+    /* ── 헤더 ── */
+    .report-header {
+      background: linear-gradient(135deg, #1e2532 0%, #2d3a52 100%);
+      color: #fff;
+      padding: 40px 48px 36px;
+    }
+    .report-header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: flex-start;
+      gap: 28px;
+    }
+    .report-badge {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,.75);
+      white-space: nowrap;
+    }
+    .report-badge span { display: block; font-size: 18px; margin-bottom: 4px; }
+    .report-title-block { flex: 1; }
+    .report-eyebrow {
+      font-size: 12px; font-weight: 600; letter-spacing: 1.5px;
+      color: rgba(255,255,255,.45); text-transform: uppercase; margin-bottom: 10px;
+    }
+    .report-title {
+      font-size: 28px; font-weight: 800; letter-spacing: -.5px;
+      margin-bottom: 10px; line-height: 1.25;
+    }
+    .report-title .accent { color: #f5a623; }
+    .report-url {
+      font-size: 13px; color: rgba(255,255,255,.5);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .report-meta {
+      display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;
+    }
+    .meta-tag {
+      font-size: 11.5px; font-weight: 600; padding: 4px 12px; border-radius: 20px;
+      background: rgba(255,255,255,.10); color: rgba(255,255,255,.80);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    /* ── 본문 ── */
+    .body-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 36px 48px 60px;
+    }
+
+    .section-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: #8a95a8;
+      margin-bottom: 14px; margin-top: 36px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e4e8ef;
+    }
+    .section-title:first-child { margin-top: 0; }
+
+    /* ── 카드 기반 ── */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px 28px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      border: 1px solid #edf0f5;
+      margin-bottom: 14px;
+      transition: box-shadow .2s;
+    }
+    .card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.09); }
+
+    .card-title {
+      font-size: 14px; font-weight: 700; color: #1e2532;
+      display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+    }
+    .card-title .icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+
+    /* ── 개요 카드 ── */
+    .overview-card {
+      background: linear-gradient(135deg, #fff9f0 0%, #fff 60%);
+      border: 1px solid #fde8c8;
+    }
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .ov-item {
+      background: #fff;
+      border: 1px solid #edf0f5;
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .ov-icon { font-size: 20px; margin-bottom: 6px; }
+    .ov-label { font-size: 10.5px; color: #8a95a8; font-weight: 600; margin-bottom: 4px; }
+    .ov-value { font-size: 13.5px; font-weight: 700; color: #1e2532; }
+
+    /* ── 구조 카드 ── */
+    .structure-list {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .structure-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 10px 14px; border-radius: 10px;
+      background: #f8f9fc; border: 1px solid #edf0f5;
+    }
+    .struct-num {
+      width: 22px; height: 22px; border-radius: 6px;
+      background: #1e2532; color: #fff;
+      font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .struct-body { flex: 1; }
+    .struct-name { font-size: 13px; font-weight: 700; color: #1e2532; margin-bottom: 2px; }
+    .struct-desc { font-size: 12px; color: #64748b; line-height: 1.5; }
+
+    /* ── 디자인 카드 ── */
+    .design-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+    .design-item {
+      padding: 14px 16px; border-radius: 12px;
+      background: #f8f9fc; border: 1px solid #edf0f5;
+    }
+    .design-label { font-size: 11px; font-weight: 700; color: #8a95a8; margin-bottom: 8px; }
+    .design-val { font-size: 13px; color: #1e2532; line-height: 1.6; }
+
+    .color-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+    .color-chip {
+      width: 22px; height: 22px; border-radius: 6px;
+      border: 1px solid rgba(0,0,0,.08);
+      display: inline-block; flex-shrink: 0;
+    }
+    .color-chip-label { font-size: 11px; color: #64748b; }
+
+    /* ── 기능 카드 ── */
+    .feature-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    }
+    .feat-item {
+      padding: 14px 16px; border-radius: 12px;
+      background: #f8f9fc; border: 1px solid #edf0f5;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .feat-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .feat-name { font-size: 13px; font-weight: 700; color: #1e2532; margin-bottom: 3px; }
+    .feat-desc { font-size: 11.5px; color: #64748b; line-height: 1.5; }
+
+    /* ── 잘한 점 / 개선점 ── */
+    .eval-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .good-card { border-left: 4px solid #22c55e; }
+    .bad-card  { border-left: 4px solid #f59e0b; }
+
+    .eval-title {
+      font-size: 13.5px; font-weight: 800; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .eval-title.good { color: #15803d; }
+    .eval-title.bad  { color: #b45309; }
+
+    .eval-list { display: flex; flex-direction: column; gap: 9px; }
+    .eval-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 12px; border-radius: 9px;
+    }
+    .good-card .eval-item { background: #f0fdf4; }
+    .bad-card  .eval-item { background: #fffbeb; }
+
+    .eval-dot {
+      width: 18px; height: 18px; border-radius: 5px;
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .good-card .eval-dot { background: #bbf7d0; color: #15803d; }
+    .bad-card  .eval-dot { background: #fed7aa; color: #b45309; }
+
+    .eval-text { font-size: 12.5px; color: #374151; line-height: 1.55; }
+    .eval-text strong { font-weight: 700; color: #1e2532; display: block; margin-bottom: 1px; }
+
+    /* ── 종합 평가 ── */
+    .summary-card {
+      background: linear-gradient(135deg, #1e2532 0%, #2d3a52 100%);
+      border: none; color: #fff;
+    }
+    .summary-card .card-title { color: #fff; }
+    .score-row {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px;
+    }
+    .score-item { text-align: center; }
+    .score-label { font-size: 10.5px; color: rgba(255,255,255,.55); margin-bottom: 6px; font-weight: 600; }
+    .score-val {
+      font-size: 22px; font-weight: 800; letter-spacing: -.5px;
+    }
+    .score-val.s5 { color: #4ade80; }
+    .score-val.s4 { color: #a3e635; }
+    .score-val.s3 { color: #facc15; }
+    .score-bar-bg {
+      height: 4px; background: rgba(255,255,255,.12); border-radius: 99px;
+      margin-top: 6px; overflow: hidden;
+    }
+    .score-bar-fill { height: 100%; border-radius: 99px; }
+
+    .summary-comment {
+      font-size: 13.5px; line-height: 1.75; color: rgba(255,255,255,.75);
+      border-top: 1px solid rgba(255,255,255,.1);
+      padding-top: 18px;
+    }
+    .summary-comment strong { color: #fff; font-weight: 700; }
+
+    /* 애니메이션 */
+    /* ── 내비게이션 공통 ── */
+    .page-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(20,28,46,.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 0 32px;
+      display: flex;
+      align-items: flex-end;
+      gap: 1px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.18);
+    }
+    .nav-tab {
+      display: flex; align-items: center; gap: 6px;
+      padding: 10px 16px 9px;
+      font-size: 12.5px; font-weight: 600;
+      color: rgba(255,255,255,.45); text-decoration: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 8px 8px 0 0;
+      white-space: nowrap; margin-bottom: -1px;
+      transition: color .2s, background .2s, border-color .2s;
+    }
+    .nav-tab:hover { color: rgba(255,255,255,.85); background: rgba(255,255,255,.07); }
+    .nav-tab.active {
+      color: #fff; border-bottom-color: #f5a623;
+      background: rgba(255,255,255,.08); font-weight: 700;
+    }
+    .nav-tab .tab-icon { font-size: 13px; line-height: 1; }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .card { animation: fadeUp .4s ease both; }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
+      .report-header { padding: 28px 24px; }
+      .body-wrap { padding: 24px; }
+      .overview-grid { grid-template-columns: 1fr 1fr; }
+      .feature-grid  { grid-template-columns: 1fr 1fr; }
+      .eval-grid     { grid-template-columns: 1fr; }
+      .score-row     { grid-template-columns: repeat(3,1fr); }
+      .design-grid   { grid-template-columns: 1fr; }
+      .report-header-inner { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── 내비게이션 ── -->
+<nav class="page-nav">
+  <a class="nav-tab" href="dashboard.html"><span class="tab-icon">📊</span>대시보드</a>
+  <a class="nav-tab" href="meeting-result.html"><span class="tab-icon">📝</span>회의록</a>
+  <a class="nav-tab" href="chart.html"><span class="tab-icon">📈</span>매출 현황</a>
+  <a class="nav-tab" href="diagram.svg"><span class="tab-icon">🗂️</span>업무 프로세스</a>
+  <a class="nav-tab active" href="report.html"><span class="tab-icon">📋</span>사이트 분석</a>
+</nav>
+
+<!-- ── 헤더 ── -->
+<div class="report-header">
+  <div class="report-header-inner">
+    <div class="report-badge">
+      <span>📋</span>
+      사이트 분석<br>리포트
+    </div>
+    <div class="report-title-block">
+      <div class="report-eyebrow">Site Analysis Report</div>
+      <div class="report-title"><span class="accent">SubTrackr</span> 사이트 분석</div>
+      <div class="report-url">🔗 https://www.subtrac.kr/</div>
+      <div class="report-meta">
+        <span class="meta-tag">구독 관리 서비스</span>
+        <span class="meta-tag">AI 기반</span>
+        <span class="meta-tag">가입 불필요</span>
+        <span class="meta-tag">무료</span>
+        <span class="meta-tag">분석일: 2026.05.06</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="body-wrap">
+
+  <!-- ── 개요 ── -->
+  <div class="section-title">서비스 개요</div>
+  <div class="card overview-card">
+    <div class="card-title">
+      <div class="icon" style="background:#fff3e0;">💡</div>
+      한눈에 보는 SubTrackr
+    </div>
+    <p style="font-size:13.5px;color:#374151;line-height:1.75;margin-bottom:18px;">
+      SubTrackr는 <strong>은행 연동 없이, 회원가입 없이</strong> 구독 서비스를 관리할 수 있는 국내 웹 서비스입니다.
+      스크린샷 한 장을 올리면 AI가 자동으로 구독을 감지하는 것이 핵심 차별점이며,
+      모든 데이터는 로컬(브라우저)에 저장되어 개인정보 유출 위험이 없습니다.
+    </p>
+    <div class="overview-grid">
+      <div class="ov-item">
+        <div class="ov-icon">🌐</div>
+        <div class="ov-label">서비스 유형</div>
+        <div class="ov-value">구독 관리 웹앱</div>
+      </div>
+      <div class="ov-item">
+        <div class="ov-icon">🤖</div>
+        <div class="ov-label">핵심 기술</div>
+        <div class="ov-value">AI 자동 감지</div>
+      </div>
+      <div class="ov-item">
+        <div class="ov-icon">🔒</div>
+        <div class="ov-label">개인정보</div>
+        <div class="ov-value">로컬 저장 방식</div>
+      </div>
+      <div class="ov-item">
+        <div class="ov-icon">💰</div>
+        <div class="ov-label">가격</div>
+        <div class="ov-value">완전 무료</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 사이트 구조 ── -->
+  <div class="section-title">사이트 구조</div>
+  <div class="card">
+    <div class="card-title">
+      <div class="icon" style="background:#eff6ff;">🗺️</div>
+      페이지 & 섹션 구성
+    </div>
+    <div class="structure-list">
+      <div class="structure-item">
+        <div class="struct-num">1</div>
+        <div class="struct-body">
+          <div class="struct-name">히어로 섹션</div>
+          <div class="struct-desc">서비스 로고 + 핵심 카피 ("스크린샷 한 장이면 충분합니다") + CTA 버튼. 상단에 "은행 연동 없이, 가입 없이, 바로 시작" 배너로 신뢰도 선제 확보.</div>
+        </div>
+      </div>
+      <div class="structure-item">
+        <div class="struct-num">2</div>
+        <div class="struct-body">
+          <div class="struct-name">요약 대시보드 (KPI 카드 3종)</div>
+          <div class="struct-desc">월간 지출 (월/연간, ₩/$), 활성 구독 수, 다음 결제일. 로그인 없이도 데모 데이터로 즉시 시각화.</div>
+        </div>
+      </div>
+      <div class="structure-item">
+        <div class="struct-num">3</div>
+        <div class="struct-body">
+          <div class="struct-name">절약 팁 배너</div>
+          <div class="struct-desc">연간 요금제 전환 시 절감 가능 금액을 강조하여 사용자에게 즉각적인 가치 제공.</div>
+        </div>
+      </div>
+      <div class="structure-item">
+        <div class="struct-num">4</div>
+        <div class="struct-body">
+          <div class="struct-name">AI 감지 + 새 구독 추가 CTA</div>
+          <div class="struct-desc">오렌지색 "AI 감지" 버튼과 다크 "새 구독 추가" 버튼 2단 배치. 주요 액션을 화면 중앙에 노출.</div>
+        </div>
+      </div>
+      <div class="structure-item">
+        <div class="struct-num">5</div>
+        <div class="struct-body">
+          <div class="struct-name">내 구독 (캘린더 뷰)</div>
+          <div class="struct-desc">월별 결제 캘린더 + 리스트 뷰 토글. 필터(전체/카테고리), 날짜 탐색 지원.</div>
+        </div>
+      </div>
+      <div class="structure-item">
+        <div class="struct-num">6</div>
+        <div class="struct-body">
+          <div class="struct-name">우측 사이드바</div>
+          <div class="struct-desc">빠른 추가 (Netflix, YouTube, Disney+, Apple TV+ 등 9개 서비스 아이콘) + 계정&카드 관리 + JSON/CSV 백업.</div>
+        </div>
+      </div>
+      <div class="structure-item">
+        <div class="struct-num">7</div>
+        <div class="struct-body">
+          <div class="struct-name">데모 섹션</div>
+          <div class="struct-desc">Netflix, Spotify, ChatGPT, YouTube Premium, iCloud+ 예시 구독 목록으로 서비스 체험 유도. "데모 건너뛰기" 링크 제공.</div>
+        </div>
+      </div>
+      <div class="structure-item">
+        <div class="struct-num">8</div>
+        <div class="struct-body">
+          <div class="struct-name">블로그 섹션</div>
+          <div class="struct-desc">구독 관련 콘텐츠 (예: ChatGPT vs Claude 비교). SEO 및 자연 유입 전략으로 활용.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 디자인 ── -->
+  <div class="section-title">디자인 분석</div>
+  <div class="card">
+    <div class="card-title">
+      <div class="icon" style="background:#fdf4ff;">🎨</div>
+      시각 디자인 시스템
+    </div>
+    <div class="design-grid">
+      <div class="design-item">
+        <div class="design-label">컬러 팔레트</div>
+        <div class="color-row">
+          <span class="color-chip" style="background:#f5f0e8;" title="배경 베이지"></span>
+          <span class="color-chip-label">크림 배경</span>
+          <span class="color-chip" style="background:#f5a623;" title="오렌지 액센트"></span>
+          <span class="color-chip-label">오렌지 포인트</span>
+          <span class="color-chip" style="background:#1a2b3c;" title="다크 네이비"></span>
+          <span class="color-chip-label">다크 네이비</span>
+          <span class="color-chip" style="background:#ffffff; border:1px solid #ddd;"></span>
+          <span class="color-chip-label">카드 흰색</span>
+        </div>
+        <div class="design-val" style="margin-top:8px;">따뜻한 베이지 계열 배경이 화면 피로도를 낮추고, 오렌지 CTA 버튼이 시선을 명확히 유도함.</div>
+      </div>
+      <div class="design-item">
+        <div class="design-label">타이포그래피</div>
+        <div class="design-val">시스템 폰트 기반의 한국어 최적화. 제목에 굵은 웨이트, 본문은 가독성 우선 사이즈. 숫자(금액)는 대형 볼드체로 강조.</div>
+      </div>
+      <div class="design-item">
+        <div class="design-label">레이아웃 & 컴포넌트</div>
+        <div class="design-val">메인 콘텐츠(2/3) + 사이드바(1/3) 구조. 둥근 모서리 카드 UI 전면 사용. 구독 리스트는 아이콘 + 이름 + D-day + 금액 1행 구성으로 스캔 용이.</div>
+      </div>
+      <div class="design-item">
+        <div class="design-label">UX 패턴</div>
+        <div class="design-val">오렌지(주요 액션) / 다크(보조 액션) 버튼 2색 체계. 회원가입 없이 즉시 사용 가능한 Zero-friction 온보딩. 데모 뷰로 서비스 가치 선체험 후 전환 유도.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 주요 기능 ── -->
+  <div class="section-title">주요 기능</div>
+  <div class="card">
+    <div class="card-title">
+      <div class="icon" style="background:#f0fdf4;">⚙️</div>
+      핵심 기능 목록
+    </div>
+    <div class="feature-grid">
+      <div class="feat-item">
+        <div class="feat-icon">🤖</div>
+        <div>
+          <div class="feat-name">AI 자동 감지</div>
+          <div class="feat-desc">스크린샷 1장 업로드 → AI가 구독 항목을 자동으로 인식·등록. 가장 강력한 차별화 포인트.</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">💳</div>
+        <div>
+          <div class="feat-name">월간/연간 지출 추적</div>
+          <div class="feat-desc">모든 구독의 월별·연간 총비용 합산. 원화($환율 병기)로 실시간 표시.</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">📅</div>
+        <div>
+          <div class="feat-name">결제 캘린더</div>
+          <div class="feat-desc">월별 캘린더에서 결제일 시각화. D-day 카운트다운으로 결제일 사전 인지.</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">💡</div>
+        <div>
+          <div class="feat-name">절약 팁</div>
+          <div class="feat-desc">연간 요금제 전환 시 절약 금액을 자동 계산해 배너로 표시. 실질적 비용 절감 가이드.</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">⚡</div>
+        <div>
+          <div class="feat-name">빠른 추가</div>
+          <div class="feat-desc">Netflix, YouTube, Disney+, Hulu 등 인기 서비스 아이콘 클릭 한 번으로 즉시 추가.</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">💾</div>
+        <div>
+          <div class="feat-name">백업 & 복원</div>
+          <div class="feat-desc">JSON / CSV 포맷으로 내보내기 지원. 데이터 이동성과 사용자 소유권 보장.</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🏦</div>
+        <div>
+          <div class="feat-name">계정 & 카드 관리</div>
+          <div class="feat-desc">결제 수단(카드/계정)을 등록해 구독별 결제 수단 연결. 카드별 지출 파악 가능.</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">📰</div>
+        <div>
+          <div class="feat-name">구독 비교 블로그</div>
+          <div class="feat-desc">ChatGPT vs Claude 등 구독 서비스 비교 콘텐츠로 자연 유입 SEO 전략 병행.</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🔔</div>
+        <div>
+          <div class="feat-name">다음 결제일 알림</div>
+          <div class="feat-desc">가장 임박한 결제일을 상단 KPI 카드로 항상 노출. 잊기 쉬운 구독 결제 방지.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 잘한 점 / 개선점 ── -->
+  <div class="section-title">평가</div>
+  <div class="eval-grid">
+
+    <div class="card good-card">
+      <div class="eval-title good">✅ 잘한 점</div>
+      <div class="eval-list">
+        <div class="eval-item">
+          <div class="eval-dot">1</div>
+          <div class="eval-text"><strong>제로 마찰 온보딩</strong>회원가입·은행 연동 없이 즉시 사용. 개인정보 우려 없이 바로 시작 가능해 진입 장벽이 극히 낮음.</div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-dot">2</div>
+          <div class="eval-text"><strong>AI 감지라는 명확한 차별점</strong>스크린샷 1장으로 자동 등록하는 기능은 경쟁 서비스 대비 독보적인 UX 혁신.</div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-dot">3</div>
+          <div class="eval-text"><strong>보안 친화적 로컬 저장</strong>모든 데이터가 서버로 전송되지 않아 금융 정보 유출 위험 원천 차단.</div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-dot">4</div>
+          <div class="eval-text"><strong>데모 데이터로 즉각 체험</strong>빈 화면이 아닌 실제 구독 예시를 보여줘 서비스 가치를 체험 후 결정 유도.</div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-dot">5</div>
+          <div class="eval-text"><strong>절약 팁의 적시 노출</strong>연간 전환 절감액을 실시간 계산해 보여주는 것은 사용자 행동 변화를 이끄는 좋은 넛지.</div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-dot">6</div>
+          <div class="eval-text"><strong>원/달러 병기 표시</strong>₩와 $ 동시 표시로 글로벌 서비스 구독자의 실제 지출 파악 편의성 향상.</div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-dot">7</div>
+          <div class="eval-text"><strong>따뜻한 베이지 배경 디자인</strong>흰 배경 대비 눈 피로도가 낮고 전체적으로 차분하며 신뢰감 있는 분위기.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bad-card">
+      <div class="eval-title bad">⚠️ 개선점</div>
+      <div class="eval-list">
+        <div class="eval-item">
+          <div class="eval-dot">1</div>
+          <div class="eval-text"><strong>기기 간 동기화 불가</strong>로컬 저장 방식의 한계로 PC → 모바일 또는 다른 기기에서 데이터 공유 불가. 옵션 로그인으로 클라우드 동기화 지원이 필요.</div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-dot">2</div>
+          <div class="eval-text"><strong>국내 서비스 커버리지 부족</strong>넷플릭스·유튜브 중심의 해외 서비스 위주. 네이버플러스, 카카오, 왓챠, 쿠팡플레이 등 국내 서비스 빠른 추가 아이콘 미제공.</div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-dot">3</div>
+          <div class="eval-text"><strong>데모 숫자의 신뢰도</strong>월간 지출 금액이 스크롤할 때마다 다르게 표시되어 사용자 혼란 가능. 고정된 데모 시나리오가 더 적절.</div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-dot">4</div>
+          <div class="eval-text"><strong>네비게이션 구조 단순</strong>로그인 + 설정 버튼 외 명확한 메뉴 구조 부재. 페이지가 많아질수록 탐색 어려움 예상.</div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-dot">5</div>
+          <div class="eval-text"><strong>AI 감지 정확도 검증 어려움</strong>스크린샷에서 AI가 어떻게 구독을 추출하는지 설명 없음. 실패 케이스 안내 및 신뢰 지표 필요.</div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-dot">6</div>
+          <div class="eval-text"><strong>모바일 전용 앱 부재</strong>구독 관리는 모바일에서 자주 확인하는 서비스임에도 PWA/앱 미지원. 모바일 접근성 향상 필요.</div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-dot">7</div>
+          <div class="eval-text"><strong>환율 업데이트 불투명</strong>₩/$1,473 환율이 고정값인지 실시간 업데이트인지 표시 없음. 출처 및 업데이트 시점 안내 필요.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── 종합 평가 ── -->
+  <div class="section-title">종합 평가</div>
+  <div class="card summary-card">
+    <div class="card-title">
+      <div class="icon" style="background:rgba(255,255,255,.12);">🏆</div>
+      종합 점수
+    </div>
+    <div class="score-row">
+      <div class="score-item">
+        <div class="score-label">핵심 기능</div>
+        <div class="score-val s5">4.5</div>
+        <div class="score-bar-bg"><div class="score-bar-fill" style="width:90%;background:#4ade80;"></div></div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">디자인/UX</div>
+        <div class="score-val s4">4.0</div>
+        <div class="score-bar-bg"><div class="score-bar-fill" style="width:80%;background:#a3e635;"></div></div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">온보딩</div>
+        <div class="score-val s5">4.5</div>
+        <div class="score-bar-bg"><div class="score-bar-fill" style="width:90%;background:#4ade80;"></div></div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">확장성</div>
+        <div class="score-val s3">3.0</div>
+        <div class="score-bar-bg"><div class="score-bar-fill" style="width:60%;background:#facc15;"></div></div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">종합</div>
+        <div class="score-val s4">4.0</div>
+        <div class="score-bar-bg"><div class="score-bar-fill" style="width:80%;background:#a3e635;"></div></div>
+      </div>
+    </div>
+    <div class="summary-comment">
+      SubTrackr는 <strong>"은행 연동 없이 AI 스크린샷 감지"</strong>라는 명확한 포지셔닝이 돋보이는 서비스입니다.
+      진입 장벽을 최소화하고 개인정보 우려를 정면 돌파한 전략은 현 구독 관리 시장에서 실질적인 차별점이 됩니다.
+      디자인도 베이지 톤과 오렌지 포인트로 따뜻하고 깔끔하게 구성되어 있습니다.
+      다만 <strong>로컬 저장의 한계(기기 동기화 불가)</strong>와 <strong>국내 서비스 부족</strong>은 국내 사용자 확보를 위해
+      조속히 해결해야 할 과제입니다. 선택적 계정 연동(로그인 시 클라우드 동기화)과 카카오·네이버 등 국내 인기 서비스
+      아이콘 확충이 이루어지면 충분히 주요 구독 관리 서비스로 자리잡을 수 있는 잠재력을 가지고 있습니다.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
